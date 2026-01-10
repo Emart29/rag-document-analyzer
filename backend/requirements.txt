@@ -20,7 +20,7 @@ torch
 # PDF processing
 PyPDF2
 pdfplumber
-python-magic-bin; sys_platform
+python-magic-bin
 
 # Data handling
 pandas
