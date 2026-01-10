@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: rag-backend
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: APP_NAME
+        value: "RAG Document Analyzer"
+      - key: APP_VERSION
+        value: "1.0.0"
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_ORIGINS
+        value: "https://your-frontend-url.vercel.app"
+      - key: CHUNK_SIZE
+        value: "500"
+      - key: CHUNK_OVERLAP
+        value: "50"
+      - key: TOP_K_RESULTS
+        value: "5"
+      - key: MAX_FILE_SIZE_MB
+        value: "10"
+    healthCheckPath: /system/health
