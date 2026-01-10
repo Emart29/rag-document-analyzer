@@ -35,6 +35,7 @@ async def ask_question(request: QuestionRequest):
     
     try:
         logger.info(f"Received question: {request.question[:100]}...")
+        logger.debug(f"Document IDs: {request.document_ids}, Conversation ID: {request.conversation_id}")
         
         # Get RAG engine
         rag_engine = get_rag_engine()

@@ -10,6 +10,7 @@ RAG Flow:
 """
 
 import os
+import hashlib
 from typing import List, Dict, Optional, Tuple
 import uuid
 from datetime import datetime
@@ -72,11 +73,12 @@ class RAGEngine:
         Complete document processing pipeline.
         
         Steps:
-        1. Extract text from PDF
-        2. Chunk the text
-        3. Generate embeddings for chunks
-        4. Store in ChromaDB
-        5. Return document metadata
+        1. Check for duplicate content
+        2. Extract text from PDF
+        3. Chunk the text
+        4. Generate embeddings for chunks
+        5. Store in ChromaDB
+        6. Return document metadata
         
         Args:
             file_path: Path to PDF file
@@ -91,6 +93,23 @@ class RAGEngine:
             start_time = time.time()
             
             logger.info(f"Processing document: {filename}")
+            
+            # Step 0: Generate content hash for duplicate detection
+            content_hash = self._generate_file_hash(file_path)
+            
+            # Check for duplicate content
+            existing_doc = self._check_duplicate(content_hash, filename)
+            if existing_doc:
+                match_type = existing_doc.get('match_type', 'unknown')
+                logger.warning(f"Duplicate document detected ({match_type}): {filename} matches {existing_doc['filename']}")
+                return {
+                    'document_id': None,
+                    'filename': filename,
+                    'status': 'duplicate',
+                    'error': f"Duplicate detected. This file matches existing document: {existing_doc['filename']}",
+                    'existing_document_id': existing_doc['document_id'],
+                    'message': f"Document already exists as '{existing_doc['filename']}'"
+                }
             
             # Generate unique document ID
             document_id = f"doc_{uuid.uuid4().hex[:12]}"
@@ -122,8 +141,11 @@ class RAGEngine:
                     'file_size': file_size,
                     'page_count': processed_data.get('page_count'),
                     'chunk_length': chunk['chunk_length'],
+                    'content_hash': content_hash,
                     'timestamp': datetime.now().isoformat()
                 }
+                # Remove any None values to satisfy ChromaDB metadata requirements
+                metadata = {k: v for k, v in metadata.items() if v is not None}
                 metadatas.append(metadata)
             
             # Step 4: Store in ChromaDB
@@ -143,6 +165,7 @@ class RAGEngine:
                 'page_count': processed_data.get('page_count'),
                 'chunk_count': len(chunks),
                 'file_size': file_size,
+                'content_hash': content_hash,
                 'processing_time': round(processing_time, 2),
                 'message': f'Successfully processed {filename}'
             }
@@ -160,6 +183,59 @@ class RAGEngine:
                 'error': str(e),
                 'message': f'Failed to process {filename}'
             }
+    
+    def _generate_file_hash(self, file_path: str) -> str:
+        """
+        Generate SHA-256 hash of file content for duplicate detection.
+        
+        Args:
+            file_path: Path to the file
+            
+        Returns:
+            Hex string of SHA-256 hash
+        """
+        sha256_hash = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
+    
+    def _check_duplicate(self, content_hash: str, filename: str = None) -> Optional[Dict]:
+        """
+        Check if a document with the same content hash or filename already exists.
+        
+        Args:
+            content_hash: SHA-256 hash of file content
+            filename: Original filename (for fallback check)
+            
+        Returns:
+            Dict with existing document info if duplicate found, None otherwise
+        """
+        try:
+            documents = self.list_documents()
+            for doc in documents:
+                # Check by filename first (simple duplicate check)
+                if filename and doc.get('filename') == filename:
+                    return {
+                        'document_id': doc['document_id'],
+                        'filename': doc['filename'],
+                        'match_type': 'filename'
+                    }
+                
+                # Check by content hash (exact content match)
+                doc_chunks = self.chroma_db.get_by_document_id(doc['document_id'])
+                if doc_chunks and doc_chunks.get('metadatas'):
+                    for metadata in doc_chunks['metadatas']:
+                        if metadata.get('content_hash') == content_hash:
+                            return {
+                                'document_id': doc['document_id'],
+                                'filename': doc['filename'],
+                                'match_type': 'content_hash'
+                            }
+            return None
+        except Exception as e:
+            logger.warning(f"Error checking for duplicates: {str(e)}")
+            return None
     
     def answer_question(
         self,
@@ -380,6 +456,15 @@ class RAGEngine:
         
         try:
             chunks_deleted = self.chroma_db.delete_document(document_id)
+            
+            if chunks_deleted == 0:
+                return {
+                    'document_id': document_id,
+                    'chunks_deleted': 0,
+                    'success': False,
+                    'error': f'Document {document_id} not found',
+                    'message': f'Document {document_id} not found'
+                }
             
             return {
                 'document_id': document_id,

@@ -5,9 +5,11 @@ RAG Document Analyzer Backend
 This is the entry point for the backend API.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from collections import defaultdict
+import time
 import logging
 import os
 from dotenv import load_dotenv
@@ -24,6 +26,40 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+# Rate limiting configuration
+class RateLimiter:
+    """Simple in-memory rate limiter."""
+    
+    def __init__(self, requests_per_minute: int = 60):
+        self.requests_per_minute = requests_per_minute
+        self.requests = defaultdict(list)
+    
+    def is_allowed(self, client_ip: str) -> bool:
+        """Check if request is allowed for this client."""
+        now = time.time()
+        minute_ago = now - 60
+        
+        # Clean old requests
+        self.requests[client_ip] = [
+            req_time for req_time in self.requests[client_ip]
+            if req_time > minute_ago
+        ]
+        
+        # Check rate limit
+        if len(self.requests[client_ip]) >= self.requests_per_minute:
+            return False
+        
+        # Record this request
+        self.requests[client_ip].append(now)
+        return True
+
+
+# Initialize rate limiter
+rate_limiter = RateLimiter(
+    requests_per_minute=int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
+)
 
 # Create FastAPI app
 app = FastAPI(
@@ -57,6 +93,29 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Apply rate limiting to all requests."""
+    # Skip rate limiting in development mode
+    if os.getenv("DEBUG", "False") == "True":
+        return await call_next(request)
+    
+    client_ip = request.client.host if request.client else "unknown"
+    
+    if not rate_limiter.is_allowed(client_ip):
+        logger.warning(f"Rate limit exceeded for {client_ip}")
+        return JSONResponse(
+            status_code=429,
+            content={
+                "error": "Too many requests",
+                "detail": "Rate limit exceeded. Please try again later."
+            }
+        )
+    
+    return await call_next(request)
 
 # Include routers
 app.include_router(documents.router)

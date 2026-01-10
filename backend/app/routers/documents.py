@@ -97,6 +97,12 @@ async def upload_document(file: UploadFile = File(...)):
                 detail=result.get('error', 'Document processing failed')
             )
         
+        if result['status'] == 'duplicate':
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=result.get('error', 'Duplicate document detected')
+            )
+        
         # Build response
         metadata = DocumentMetadata(
             filename=file.filename,
