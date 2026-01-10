@@ -1,0 +1,35 @@
+# FastAPI and server
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+
+# CORS for React frontend
+fastapi-cors
+
+# Groq API client
+groq
+
+# Vector database
+chromadb
+
+# Embeddings
+sentence-transformers
+torch
+
+# PDF processing
+PyPDF2
+pdfplumber
+python-magic-bin; sys_platform
+
+# Data handling
+pandas
+numpy
+
+# Utilities
+aiofiles
+pydantic
+pydantic-settings
+
+# For production
+gunicorn
