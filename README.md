@@ -1,13 +1,27 @@
 # 🚀 RAG Document Analyzer
 
-[![React](https://img.shields.io/badge/React-18.2-blue?logo=react)](https://reactjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Groq](https://img.shields.io/badge/Groq-Llama%203.1%2070B-orange)](https://groq.com/)
+A **production-ready Retrieval-Augmented Generation (RAG) system** for intelligent document question-answering, powered by **Groq’s ultra-fast LLM inference**.
+
+🎥 **Live Demo**: https://rag-document-analyzer.vercel.app  
+📖 **API Docs (Swagger)**: https://rag-document-analyzer.onrender.com/docs  
+🐛 **Report Bug**: https://github.com/Emart29/rag-document-analyzer/issues  
+
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://rag-document-analyzer.vercel.app)
+[![API Docs](https://img.shields.io/badge/API-Docs-blue)](https://rag-document-analyzer.onrender.com/docs)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**A production-ready RAG (Retrieval-Augmented Generation) system for intelligent document question-answering powered by Groq's lightning-fast LLM inference.**
+---
 
-[🎥 Live Demo](https://your-deployment-url.vercel.app) | [📖 Documentation](#documentation) | [🐛 Report Bug](https://github.com/Emart29/rag-document-analyzer/issues)
+## ✨ Overview
+
+**RAG Document Analyzer** allows users to upload PDF documents and ask natural-language questions while receiving **accurate, source-cited answers**.  
+It combines **semantic search + LLM reasoning** for fast, reliable document intelligence.
+
+Built with:
+- **React + Vite** (Frontend)
+- **FastAPI** (Backend)
+- **Groq (Llama 3.1 70B)** for lightning-fast inference
+- **ChromaDB** for vector similarity search
 
 ---
 
