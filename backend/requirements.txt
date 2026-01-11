@@ -4,6 +4,10 @@ uvicorn[standard]
 python-multipart
 python-dotenv
 
+# Data handling
+pandas
+numpy<2
+
 # CORS for React frontend
 fastapi-cors
 
@@ -15,19 +19,12 @@ chromadb
 
 # Embeddings
 sentence-transformers
-
-# 🔑 CPU-only PyTorch (CRITICAL)
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.2.2+cpu
+torch==2.2.2
 
 # PDF processing
 PyPDF2
 pdfplumber
 python-magic
-
-# Data handling
-pandas
-numpy
 
 # Utilities
 aiofiles
