@@ -10,7 +10,8 @@ import logging
 from ..models import (
     QuestionRequest,
     QuestionResponse,
-    SourceReference
+    SourceReference,
+    LLMObservabilityData
 )
 from ..services.rag_engine import get_rag_engine
 
@@ -60,12 +61,23 @@ async def ask_question(request: QuestionRequest):
         ]
         
         # Build response
+        observability = LLMObservabilityData(
+            prompt_tokens=result.get('prompt_tokens', 0),
+            completion_tokens=result.get('completion_tokens', 0),
+            total_tokens=result.get('total_tokens', 0),
+            estimated_cost_usd=result.get('estimated_cost_usd', 0.0),
+            llm_latency_ms=result.get('llm_latency_ms', 0.0),
+            prompt_template_key=result.get('prompt_template_key'),
+            prompt_template_version=result.get('prompt_template_version')
+        )
+
         response = QuestionResponse(
             answer=result['answer'],
             sources=sources,
             conversation_id=result['conversation_id'],
             processing_time=result['processing_time'],
-            model_used=result['model_used']
+            model_used=result['model_used'],
+            observability=observability
         )
         
         logger.info(f"Question answered in {result['processing_time']:.2f}s")

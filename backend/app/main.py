@@ -14,11 +14,13 @@ import logging
 import os
 from dotenv import load_dotenv
 
+from .database.observability_db import init_observability_db
+
 # Load environment variables
 load_dotenv()
 
 # Import routers
-from .routers import documents, query, system
+from .routers import documents, query, system, observability
 
 # Configure logging
 logging.basicConfig(
@@ -121,6 +123,7 @@ async def rate_limit_middleware(request: Request, call_next):
 app.include_router(documents.router)
 app.include_router(query.router)
 app.include_router(system.router)
+app.include_router(observability.router)
 
 
 @app.get("/")
@@ -180,6 +183,9 @@ async def startup_event():
     logger.info(f"   Environment: {'Development' if os.getenv('DEBUG') == 'True' else 'Production'}")
     logger.info("=" * 60)
     
+    # Initialize observability DB
+    init_observability_db()
+
     # Initialize RAG engine (loads models)
     try:
         from .services.rag_engine import get_rag_engine
