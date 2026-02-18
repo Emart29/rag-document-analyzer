@@ -1,227 +1,280 @@
-# 🚀 RAG Document Analyzer
+# RAG Document Analyzer
 
-A **production-ready Retrieval-Augmented Generation (RAG) system** for intelligent document question-answering, powered by **Groq’s ultra-fast LLM inference**.
+> A production-ready Retrieval-Augmented Generation (RAG) system for intelligent document question-answering, with integrated LLM observability and monitoring — powered by Groq's ultra-fast inference engine.
 
-🎥 **Live Demo**: https://rag-document-analyzer.vercel.app  
-📖 **API Docs (Swagger)**: https://rag-document-analyzer.onrender.com/docs  
-🐛 **Report Bug**: https://github.com/Emart29/rag-document-analyzer/issues  
-
-[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://rag-document-analyzer.vercel.app)
-[![API Docs](https://img.shields.io/badge/API-Docs-blue)](https://rag-document-analyzer.onrender.com/docs)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-rag--document--analyzer.vercel.app-blue)](https://rag-document-analyzer.vercel.app)
+[![API Docs](https://img.shields.io/badge/API%20Docs-Swagger%20UI-green)](https://rag-document-analyzer.onrender.com/docs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ---
 
-## ✨ Overview
+## Overview
 
-**RAG Document Analyzer** allows users to upload PDF documents and ask natural-language questions while receiving **accurate, source-cited answers**.  
-It combines **semantic search + LLM reasoning** for fast, reliable document intelligence.
+RAG Document Analyzer lets users upload PDF documents and ask natural-language questions, receiving accurate, source-cited answers grounded in the document content. It combines semantic vector search with LLM reasoning for fast, reliable document intelligence.
 
-Built with:
-- **React + Vite** (Frontend)
-- **FastAPI** (Backend)
-- **Groq (Llama 3.1 70B)** for lightning-fast inference
-- **ChromaDB** for vector similarity search
+In its latest update, the system now includes a full **LLM observability and monitoring layer** — providing real-time visibility into token usage, query cost, latency, and prompt governance directly from a built-in dashboard.
 
----
-
-## ✨ Features
-
-### 🎯 Core Capabilities
-- **📄 PDF Document Processing**: Upload and process PDFs with intelligent text chunking
-- **🧠 AI-Powered Q&A**: Ask natural language questions and get accurate answers
-- **🔍 Semantic Search**: Vector-based similarity search using ChromaDB
-- **📚 Source Citations**: Every answer includes relevant document excerpts with page numbers
-- **💬 Conversation History**: Maintains context across multiple questions
-- **⚡ Lightning Fast**: Powered by Groq's ultra-fast LLM inference (500+ tokens/sec)
-
-### 🎨 Modern UI/UX
-- **Beautiful React Interface**: Built with Vite, TailwindCSS, and shadcn/ui
-- **Responsive Design**: Works seamlessly across devices
-- **Real-time Updates**: Live upload progress and query processing
-- **Dark Mode Support**: Eye-friendly interface (if implemented)
-- **Drag & Drop**: Intuitive document upload experience
-
-### 🛠️ Technical Excellence
-- **Production-Ready**: Comprehensive error handling and validation
-- **Scalable Architecture**: Modular, maintainable codebase
-- **API Documentation**: Auto-generated Swagger/OpenAPI docs
-- **Type Safety**: Pydantic models for request/response validation
-- **Performance Optimized**: Efficient chunking, batching, and caching
+**Built with:**
+- React + Vite (Frontend)
+- FastAPI (Backend)
+- Groq (Llama 3.1 70B) for LLM inference
+- ChromaDB for vector similarity search
+- SQLAlchemy + SQLite/PostgreSQL for observability persistence
 
 ---
 
-## 🏗️ Architecture
+## Features
+
+### Core RAG Capabilities
+- **PDF Document Processing** — Upload and process PDFs with intelligent text chunking
+- **AI-Powered Q&A** — Ask natural-language questions and receive grounded, accurate answers
+- **Semantic Search** — Vector-based similarity search via ChromaDB
+- **Source Citations** — Every answer includes relevant document excerpts with page references
+- **Conversation History** — Context is maintained across multiple questions in a session
+- **Lightning-Fast Inference** — Powered by Groq (500+ tokens/sec)
+
+### LLM Observability (update)
+- **Request Logging** — Every LLM call is logged with prompt, response, model, status, and timestamps
+- **Token Usage Monitoring** — Tracks prompt tokens, completion tokens, and total tokens per request
+- **Cost per Query** — Configurable per-1K token pricing for transparent cost accounting
+- **Latency Tracking** — Per-request LLM latency measured and persisted in milliseconds
+- **Prompt Versioning** — Prompt templates are versioned with active/inactive states for auditability
+- **Observability Dashboard** — React tab visualizing metrics, trends, logs, and active prompt templates
+
+### UI/UX
+- Modern React interface built with TailwindCSS and shadcn/ui
+- Responsive design across desktop and mobile
+- Real-time upload progress and query processing indicators
+- Drag-and-drop document upload
+- Dedicated Observability tab with live metrics and request logs
+
+---
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     React Frontend (Vite)                    │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  Document    │  │     Chat     │  │   Source     │      │
-│  │   Upload     │  │  Interface   │  │  Citations   │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│                    React Frontend (Vite)                     │
+│   Document Upload │ Chat Interface │ Observability Dashboard │
 └────────────────────────┬────────────────────────────────────┘
                          │ REST API (Axios)
 ┌────────────────────────▼────────────────────────────────────┐
-│                    FastAPI Backend                           │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              RAG Engine (Orchestrator)                │   │
-│  └──┬────────────┬────────────┬────────────┬───────────┘   │
-│     │            │            │            │                │
-│  ┌──▼───┐   ┌───▼───┐   ┌───▼────┐   ┌───▼─────┐         │
-│  │ PDF  │   │ Groq  │   │Sentence│   │ Chroma  │         │
-│  │Proces│   │ API   │   │Transform│   │   DB    │         │
-│  │sor   │   │(LLM)  │   │ (Embed)│   │(Vector) │         │
-│  └──────┘   └───────┘   └────────┘   └─────────┘         │
+│                      FastAPI Backend                         │
+│              RAG Engine (Orchestrator)                       │
+│   PDF Processor │ Groq API │ Sentence Transformers │ ChromaDB│
+│                                                              │
+│              Observability Layer                             │
+│   groq_client.py (wrapped) │ observability_service.py       │
+│   observability_db.py (SQLAlchemy) │ /observability router   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- **Python 3.8+**
-- **Node.js 18+**
-- **Groq API Key** ([Get free key](https://console.groq.com/))
-- **8GB RAM minimum**
-- **2GB free disk space**
+- Python 3.8+
+- Node.js 18+
+- [Groq API Key](https://console.groq.com) (free tier available)
+- 8 GB RAM minimum
+- 2 GB free disk space
 
-### Installation
+### 1. Clone the Repository
 
-#### 1️⃣ Clone Repository
 ```bash
 git clone https://github.com/Emart29/rag-document-analyzer.git
 cd rag-document-analyzer
 ```
 
-#### 2️⃣ Setup Backend
+### 2. Backend Setup
+
 ```bash
-# Navigate to backend
 cd backend
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env and add your GROQ_API_KEY
-
-# Start backend server
+cp .env.example .env            # Add your GROQ_API_KEY and observability config
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Backend will start on: **http://localhost:8000**
+Backend: http://localhost:8000  
+API Docs: http://localhost:8000/docs
 
-API Documentation: **http://localhost:8000/docs**
+### 3. Frontend Setup
 
-#### 3️⃣ Setup Frontend
 ```bash
-# Open new terminal, navigate to frontend
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
-Frontend will start on: **http://localhost:5173**
+Frontend: http://localhost:5173
 
 ---
 
-## 📖 Usage
+## Environment Variables
 
-### Upload Documents
-1. Click the **Upload** tab in the sidebar
-2. Drag & drop a PDF or click **Browse**
-3. Wait for processing (10-30 seconds)
-4. Document appears in the **Documents** list
+Add the following to `backend/.env`:
+
+```env
+# Required
+GROQ_API_KEY=gsk_...
+
+# Observability database (SQLite default)
+OBSERVABILITY_DB_URL=sqlite:///./observability.db
+
+# Optional: PostgreSQL
+# OBSERVABILITY_DB_URL=postgresql+psycopg2://user:password@localhost:5432/rag_obs
+
+# Cost model (USD per 1,000 tokens)
+GROQ_INPUT_TOKEN_COST_PER_1K=0.00059
+GROQ_OUTPUT_TOKEN_COST_PER_1K=0.00079
+```
+
+---
+
+## Usage
+
+### Upload a Document
+1. Open the **Upload** tab in the sidebar
+2. Drag and drop a PDF, or click Browse
+3. Wait for processing (typically 10–30 seconds)
+4. The document appears in the Documents list
 
 ### Ask Questions
-1. Select documents (optional - searches all if none selected)
+1. Optionally select specific documents (defaults to searching all)
 2. Type your question in the chat input
-3. Press **Enter** or click **Send**
-4. Get AI-generated answer with source citations in 2-3 seconds
+3. Receive an AI-generated answer with source citations in 2–3 seconds
 
-### Example Questions
-```
-"What are the main findings of this research?"
-"Summarize the key points from page 5"
-"Compare the methodologies discussed in the documents"
-"What does the author say about machine learning?"
-```
+### Monitor with the Observability Dashboard
+1. Open the **Observability** tab
+2. View total queries, tokens consumed, estimated cost, and average latency
+3. Inspect daily usage trends and per-request logs
+4. Manage and review versioned prompt templates
 
 ---
 
-## 🛠️ Technology Stack
+## API Reference
+
+### RAG Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/documents/upload` | Upload and process a PDF |
+| GET | `/documents` | List all uploaded documents |
+| POST | `/query` | Submit a question and receive an answer |
+
+### Observability Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/observability/metrics?window_hours=24` | Aggregated metrics for the given window |
+| GET | `/observability/logs?limit=50` | Recent LLM request logs |
+| GET | `/observability/prompts` | List all prompt template versions |
+| POST | `/observability/prompts` | Create a new prompt template version |
+
+---
+
+## Technology Stack
 
 ### Frontend
 | Technology | Purpose |
 |------------|---------|
-| **React 18** | UI framework |
-| **Vite** | Build tool & dev server |
-| **TailwindCSS** | Styling |
-| **shadcn/ui** | UI components |
-| **Tanstack Query** | Server state management |
-| **Axios** | HTTP client |
-| **React Markdown** | Answer rendering |
-| **Lucide React** | Icons |
+| React 18 | UI framework |
+| Vite | Build tool & dev server |
+| TailwindCSS | Styling |
+| shadcn/ui | UI components |
+| Tanstack Query | Server state management |
+| Axios | HTTP client |
+| React Markdown | Answer rendering |
+| Lucide React | Icons |
 
 ### Backend
 | Technology | Purpose |
 |------------|---------|
-| **FastAPI** | REST API framework |
-| **Groq API** | LLM inference (Llama 3.1 70B) |
-| **ChromaDB** | Vector database |
-| **Sentence Transformers** | Text embeddings |
-| **PyPDF2 & pdfplumber** | PDF text extraction |
-| **Pydantic** | Data validation |
-| **Uvicorn** | ASGI server |
+| FastAPI | REST API framework |
+| Groq API | LLM inference (Llama 3.1 70B) |
+| ChromaDB | Vector database |
+| Sentence Transformers | Text embeddings |
+| PyPDF2 / pdfplumber | PDF text extraction |
+| SQLAlchemy | Observability persistence (SQLite/PostgreSQL) |
+| Pydantic | Data validation |
+| Uvicorn | ASGI server |
 
 ---
 
-## 📊 Performance Metrics
+## Project Structure
 
-**Tested on:** Dell Latitude 5400 (i5-8th gen, 8GB RAM)
-
-| Operation | Time | Notes |
-|-----------|------|-------|
-| **Document Upload** | 10-30s | 5-page PDF |
-| **Question Answering** | 1-3s | Including retrieval & generation |
-| **Semantic Search** | <100ms | ChromaDB query |
-| **Memory Usage** | ~600MB | Backend runtime |
-| **LLM Inference** | 500+ tokens/sec | Via Groq |
-
----
-
-## 🚢 Deployment
-
-### Frontend Deployment (Vercel) - FREE ✅
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Navigate to frontend folder
-cd frontend
-
-# Deploy
-vercel
-
-# Follow prompts, set environment variable:
-# VITE_API_URL=https://your-backend-url.onrender.com
+```
+rag-document-analyzer/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── models.py
+│   │   ├── routers/
+│   │   │   ├── documents.py
+│   │   │   ├── query.py
+│   │   │   ├── system.py
+│   │   │   └── observability.py          # ← update
+│   │   ├── services/
+│   │   │   ├── rag_engine.py
+│   │   │   ├── groq_client.py            # ← Wrapped with observability
+│   │   │   ├── embeddings.py
+│   │   │   ├── pdf_processor.py
+│   │   │   └── observability_service.py  # ← update
+│   │   └── database/
+│   │       ├── chroma_db.py
+│   │       └── observability_db.py       # ← update
+│   ├── requirements.txt
+│   └── .env
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Header.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── ChatInterface.jsx
+│   │   │   ├── DocumentList.jsx
+│   │   │   ├── ObservabilityDashboard.jsx  # ← update
+│   │   │   └── ui/
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   └── package.json
+└── README.md
 ```
 
-### Backend Deployment (Render.com) - FREE ✅
+---
 
-1. Create `render.yaml` in project root:
+## Performance
+
+Tested on (Intel i5 8th Gen, 8 GB RAM):
+
+| Operation | Duration | Notes |
+|-----------|----------|-------|
+| Document Upload | 10–30s | 5-page PDF |
+| Question Answering | 1–3s | Retrieval + generation |
+| Semantic Search | < 100ms | ChromaDB query |
+| Backend Memory | ~600 MB | Runtime |
+| LLM Inference | 500+ tokens/sec | Via Groq |
+
+---
+
+## Deployment
+
+### Frontend — Vercel (Free)
+
+```bash
+npm i -g vercel
+cd frontend
+vercel
+# Set VITE_API_URL=https://your-backend.onrender.com
+```
+
+### Backend — Render.com (Free)
+
+Create `render.yaml` in the project root:
+
 ```yaml
 services:
   - type: web
@@ -229,335 +282,112 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: |
-      cd backend
-      pip install -r requirements.txt
+    buildCommand: cd backend && pip install -r requirements.txt
     startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: GROQ_API_KEY
         sync: false
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: OBSERVABILITY_DB_URL
+        value: sqlite:///./observability.db
 ```
 
-2. Push to GitHub
-3. Connect repo to Render.com
-4. Add `GROQ_API_KEY` environment variable
-5. Deploy!
-
-**Your app will be live at:**
-- Frontend: `https://your-app.vercel.app`
-- Backend API: `https://your-api.onrender.com`
+Push to GitHub → connect repo to Render → add `GROQ_API_KEY` → deploy.
 
 ---
 
-## 📁 Project Structure
+## Security
 
-```
-rag-document-analyzer/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI application
-│   │   ├── models.py            # Pydantic models
-│   │   ├── routers/             # API endpoints
-│   │   │   ├── documents.py     # Document operations
-│   │   │   ├── query.py         # Q&A endpoints
-│   │   │   └── system.py        # Health & stats
-│   │   ├── services/            # Business logic
-│   │   │   ├── rag_engine.py    # RAG orchestration
-│   │   │   ├── groq_client.py   # LLM interface
-│   │   │   ├── embeddings.py    # Vector generation
-│   │   │   └── pdf_processor.py # Document processing
-│   │   └── database/
-│   │       └── chroma_db.py     # Vector database
-│   ├── requirements.txt
-│   ├── .env
-│   └── README.md
-├── frontend/
-│   ├── src/
-│   │   ├── components/          # React components
-│   │   │   ├── Header.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── ChatInterface.jsx
-│   │   │   ├── DocumentList.jsx
-│   │   │   └── ui/              # shadcn components
-│   │   ├── services/
-│   │   │   └── api.js           # API client
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── README.md
-├── README.md                    # This file
-└── LICENSE
-```
+- Environment variables for all sensitive credentials
+- Input validation via Pydantic models
+- CORS configured for frontend origin
+- File size and type validation on upload
+- Error handling and structured logging throughout
+- **Recommended for production:** Add JWT authentication and per-user document isolation
 
 ---
 
-## 🧪 Testing
+## Troubleshooting
 
-### Backend Tests
+**`GROQ_API_KEY not found`**
 ```bash
-cd backend
-
-# Test individual components
-python app/services/groq_client.py
-python app/services/embeddings.py
-python app/database/chroma_db.py
-python app/services/rag_engine.py
-
-# API documentation
-# Visit: http://localhost:8000/docs
+cat backend/.env  # Verify GROQ_API_KEY=gsk_... is present
 ```
 
-### Frontend Tests
+**ChromaDB errors**
 ```bash
-cd frontend
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
----
-
-## 🔒 Security & Best Practices
-
-- ✅ Environment variables for sensitive data
-- ✅ Input validation with Pydantic
-- ✅ CORS configuration for frontend
-- ✅ File size and type validation
-- ✅ Error handling and logging
-- ✅ API rate limiting (recommended for production)
-- ⚠️ Add authentication for production use
-- ⚠️ Implement user management for multi-tenant
-
----
-
-## 🐛 Troubleshooting
-
-### Backend Issues
-
-**Issue:** "GROQ_API_KEY not found"
-```bash
-# Solution: Check .env file
-cat backend/.env  # Should show GROQ_API_KEY=gsk_...
-```
-
-**Issue:** ChromaDB errors
-```bash
-# Solution: Clear database and restart
 rm -rf backend/chroma_db/
-# Restart backend
+# Restart the backend
 ```
 
-**Issue:** PDF processing fails
+**PDF processing fails**
 ```bash
-# Solution: Install additional dependencies
-pip install python-magic-bin  # Windows
-pip install python-magic       # Mac/Linux
+pip install python-magic       # macOS/Linux
+pip install python-magic-bin   # Windows
 ```
 
-### Frontend Issues
-
-**Issue:** API connection refused
+**Frontend API connection refused**
 ```bash
-# Solution: Check VITE_API_URL in .env
-# Verify backend is running on correct port
+# Verify VITE_API_URL in frontend/.env points to the running backend
 ```
 
-**Issue:** Build errors
+**Build errors**
 ```bash
-# Solution: Clear cache and reinstall
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ---
 
-## 🎯 Future Enhancements
+## Roadmap
 
-- [ ] **Multi-format Support**: Add .docx, .txt, .md support
-- [ ] **User Authentication**: JWT-based auth system
-- [ ] **Multi-tenancy**: Per-user document isolation
-- [ ] **Advanced Filters**: Filter by date, size, type
-- [ ] **Export Conversations**: Download chat history
-- [ ] **Streaming Responses**: Real-time token streaming
-- [ ] **Voice Input**: Speech-to-text for questions
-- [ ] **Document Summarization**: Auto-generate summaries
-- [ ] **Collaborative Sharing**: Share documents between users
-- [ ] **Analytics Dashboard**: Usage statistics and insights
+- [ ] Multi-format support (.docx, .txt, .md)
+- [ ] JWT-based user authentication
+- [ ] Per-user document isolation (multi-tenancy)
+- [ ] Streaming LLM responses (real-time tokens)
+- [ ] Export conversation history
+- [ ] Voice input (speech-to-text)
+- [ ] Auto-generated document summaries
+- [ ] Collaborative document sharing
+- [ ] Advanced analytics (per-user usage, cost breakdowns)
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome.
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add your feature'`
+4. Push to the branch: `git push origin feature/your-feature`
 5. Open a Pull Request
 
 ---
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👤 Author
-
-**Your Name**
-
-- LinkedIn: [Emmanuel Nwanguma](https://linkedin.com/in/nwangumaemmanuel)
-- GitHub: [Emart29](https://github.com/Emart29)
+This project is licensed under the [MIT License](./LICENSE).
 
 ---
 
-## 🙏 Acknowledgments
+## Author
 
-- [Groq](https://groq.com/) - Ultra-fast LLM inference platform
-- [ChromaDB](https://www.trychroma.com/) - Open-source embedding database
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
-- [Sentence Transformers](https://www.sbert.net/) - State-of-the-art text embeddings
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful React components
-- [Vercel](https://vercel.com/) - Frontend hosting platform
-- [Render](https://render.com/) - Backend hosting platform
+**Emmanuel Nwanguma**  
+[GitHub: Emart29](https://github.com/Emart29) · [LinkedIn](https://linkedin.com/in/emmanuel-nwanguma)
 
 ---
 
-## 📊 Project Stats
+## Acknowledgments
 
-![GitHub stars](https://img.shields.io/github/stars/Emart29/rag-document-analyzer?style=social)
-![GitHub forks](https://img.shields.io/github/forks/Emart29/rag-document-analyzer?style=social)
-![GitHub issues](https://img.shields.io/github/issues/Emart29/rag-document-analyzer)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/Emart29/rag-document-analyzer)
+- [Groq](https://groq.com) — Ultra-fast LLM inference
+- [ChromaDB](https://www.trychroma.com) — Open-source embedding database
+- [FastAPI](https://fastapi.tiangolo.com) — Modern Python web framework
+- [Sentence Transformers](https://www.sbert.net) — State-of-the-art text embeddings
+- [shadcn/ui](https://ui.shadcn.com) — Beautiful React component library
+- [Vercel](https://vercel.com) & [Render](https://render.com) — Hosting platforms
 
 ---
 
-<div align="center">
-
-**⭐ If this project helped you, please give it a star! ⭐**
-
-Made with ❤️ by [Emmanuel Nwanguma](https://github.com/Emart29)
-
-[⬆ Back to Top](#-rag-document-analyzer)
-
-</div>
----
-
-## 📈 Project 3: LLM Observability & Monitoring
-
-This project now includes a fully integrated observability layer across the FastAPI backend and React frontend dashboard.
-
-### ✅ Implemented Features
-
-- **Custom Logging for All LLM Calls**
-  - Every Groq request is wrapped and logged with prompt input, answer output, timestamps, model, metadata, status, and errors.
-- **Prompt & Response Tracking (Persistent DB)**
-  - Stored in `llm_request_logs` using SQLAlchemy with SQLite by default (`observability.db`) or PostgreSQL via `OBSERVABILITY_DB_URL`.
-- **Token Usage Monitoring**
-  - Captures prompt tokens, completion tokens, and total tokens for each LLM call.
-- **Cost per Query Calculation**
-  - Uses configurable per-1K token rates:
-    - `GROQ_INPUT_TOKEN_COST_PER_1K`
-    - `GROQ_OUTPUT_TOKEN_COST_PER_1K`
-- **Latency Tracking**
-  - Measures and stores per-request LLM latency in milliseconds.
-- **Prompt Versioning**
-  - Prompt templates are versioned in `prompt_templates` with active/inactive states for auditability and experimentation.
-- **Dashboard Visualization (React)**
-  - New Observability tab visualizes:
-    - total queries
-    - total tokens
-    - total cost
-    - average latency
-    - daily trends
-    - active prompt templates
-    - recent LLM request logs
-
-### 🗂️ Observability API Endpoints
-
-- `GET /observability/metrics?window_hours=24`
-- `GET /observability/logs?limit=50`
-- `GET /observability/prompts`
-- `POST /observability/prompts`
-
-### ⚙️ Environment Variables
-
-Add these to `backend/.env`:
-
-```bash
-# Observability database (SQLite default)
-OBSERVABILITY_DB_URL=sqlite:///./observability.db
-
-# Optional: PostgreSQL example
-# OBSERVABILITY_DB_URL=postgresql+psycopg2://user:password@localhost:5432/rag_observability
-
-# Cost model (USD per 1000 tokens)
-GROQ_INPUT_TOKEN_COST_PER_1K=0.00059
-GROQ_OUTPUT_TOKEN_COST_PER_1K=0.00079
-```
-
-### 🧩 Code Structure Added for Project 3
-
-```text
-backend/app/
-├── database/
-│   └── observability_db.py          # SQLAlchemy engine + tables
-├── services/
-│   └── observability_service.py     # logging, metrics, prompt versions
-├── routers/
-│   └── observability.py             # observability REST endpoints
-├── services/groq_client.py          # wrapped LLM calls + observability capture
-└── models.py                        # observability response models
-
-frontend/src/
-├── components/
-│   └── ObservabilityDashboard.jsx   # metrics dashboard UI
-├── services/
-│   └── api.js                       # observability API methods
-└── App.jsx                          # Chat + Observability tabs
-```
-
-### ▶️ How to Run Project 3 End-to-End
-
-1. Start backend:
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-2. Start frontend:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-3. Use the app:
-- Upload a PDF
-- Ask questions in Chat
-- Open the **Observability** tab to see metrics and request logs in real time
-
-### 🎯 Benefits
-
-- Better production debugging and reliability
-- Cost and token transparency per query
-- Prompt governance and audit history
-- Easier performance optimization through latency and usage trends
-
-### 📣 Suggested Social Media Lines
-
-- "Just shipped full LLM observability in my RAG Document Analyzer: token tracking, query cost, latency metrics, prompt versioning, and a live dashboard. #LLMOps #RAG #FastAPI #React"
-- "Project 3 complete ✅ Added production-grade monitoring to a RAG app with Groq + ChromaDB: logs, usage analytics, prompt audits, and metrics dashboard. #GenAI #MLOps"
-- "From prototype to production: integrated end-to-end LLM monitoring (prompts, responses, tokens, cost, latency) into our document Q&A platform. #LLMObservability"
+*If this project was useful to you, consider giving it a ⭐ on GitHub.*
