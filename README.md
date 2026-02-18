@@ -452,3 +452,112 @@ Made with ❤️ by [Emmanuel Nwanguma](https://github.com/Emart29)
 [⬆ Back to Top](#-rag-document-analyzer)
 
 </div>
+---
+
+## 📈 Project 3: LLM Observability & Monitoring
+
+This project now includes a fully integrated observability layer across the FastAPI backend and React frontend dashboard.
+
+### ✅ Implemented Features
+
+- **Custom Logging for All LLM Calls**
+  - Every Groq request is wrapped and logged with prompt input, answer output, timestamps, model, metadata, status, and errors.
+- **Prompt & Response Tracking (Persistent DB)**
+  - Stored in `llm_request_logs` using SQLAlchemy with SQLite by default (`observability.db`) or PostgreSQL via `OBSERVABILITY_DB_URL`.
+- **Token Usage Monitoring**
+  - Captures prompt tokens, completion tokens, and total tokens for each LLM call.
+- **Cost per Query Calculation**
+  - Uses configurable per-1K token rates:
+    - `GROQ_INPUT_TOKEN_COST_PER_1K`
+    - `GROQ_OUTPUT_TOKEN_COST_PER_1K`
+- **Latency Tracking**
+  - Measures and stores per-request LLM latency in milliseconds.
+- **Prompt Versioning**
+  - Prompt templates are versioned in `prompt_templates` with active/inactive states for auditability and experimentation.
+- **Dashboard Visualization (React)**
+  - New Observability tab visualizes:
+    - total queries
+    - total tokens
+    - total cost
+    - average latency
+    - daily trends
+    - active prompt templates
+    - recent LLM request logs
+
+### 🗂️ Observability API Endpoints
+
+- `GET /observability/metrics?window_hours=24`
+- `GET /observability/logs?limit=50`
+- `GET /observability/prompts`
+- `POST /observability/prompts`
+
+### ⚙️ Environment Variables
+
+Add these to `backend/.env`:
+
+```bash
+# Observability database (SQLite default)
+OBSERVABILITY_DB_URL=sqlite:///./observability.db
+
+# Optional: PostgreSQL example
+# OBSERVABILITY_DB_URL=postgresql+psycopg2://user:password@localhost:5432/rag_observability
+
+# Cost model (USD per 1000 tokens)
+GROQ_INPUT_TOKEN_COST_PER_1K=0.00059
+GROQ_OUTPUT_TOKEN_COST_PER_1K=0.00079
+```
+
+### 🧩 Code Structure Added for Project 3
+
+```text
+backend/app/
+├── database/
+│   └── observability_db.py          # SQLAlchemy engine + tables
+├── services/
+│   └── observability_service.py     # logging, metrics, prompt versions
+├── routers/
+│   └── observability.py             # observability REST endpoints
+├── services/groq_client.py          # wrapped LLM calls + observability capture
+└── models.py                        # observability response models
+
+frontend/src/
+├── components/
+│   └── ObservabilityDashboard.jsx   # metrics dashboard UI
+├── services/
+│   └── api.js                       # observability API methods
+└── App.jsx                          # Chat + Observability tabs
+```
+
+### ▶️ How to Run Project 3 End-to-End
+
+1. Start backend:
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. Start frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+3. Use the app:
+- Upload a PDF
+- Ask questions in Chat
+- Open the **Observability** tab to see metrics and request logs in real time
+
+### 🎯 Benefits
+
+- Better production debugging and reliability
+- Cost and token transparency per query
+- Prompt governance and audit history
+- Easier performance optimization through latency and usage trends
+
+### 📣 Suggested Social Media Lines
+
+- "Just shipped full LLM observability in my RAG Document Analyzer: token tracking, query cost, latency metrics, prompt versioning, and a live dashboard. #LLMOps #RAG #FastAPI #React"
+- "Project 3 complete ✅ Added production-grade monitoring to a RAG app with Groq + ChromaDB: logs, usage analytics, prompt audits, and metrics dashboard. #GenAI #MLOps"
+- "From prototype to production: integrated end-to-end LLM monitoring (prompts, responses, tokens, cost, latency) into our document Q&A platform. #LLMObservability"

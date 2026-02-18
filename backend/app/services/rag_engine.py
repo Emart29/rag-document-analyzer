@@ -301,11 +301,17 @@ class RAGEngine:
             
             # Step 4: Generate answer
             logger.info("Step 4/4: Generating answer...")
-            answer = self.groq_client.generate_answer(
+            llm_result = self.groq_client.generate_answer(
                 question=question,
                 context=context,
-                conversation_history=conversation_history
+                conversation_history=conversation_history,
+                conversation_id=conversation_id,
+                request_metadata={
+                    "document_ids": document_ids or [],
+                    "chunks_retrieved": len(relevant_chunks),
+                },
             )
+            answer = llm_result["answer"]
             
             # Step 5: Format sources
             sources = self._format_sources(relevant_chunks)
@@ -326,7 +332,14 @@ class RAGEngine:
                 'conversation_id': conversation_id,
                 'processing_time': round(processing_time, 2),
                 'model_used': self.groq_client.model,
-                'chunks_used': len(relevant_chunks)
+                'chunks_used': len(relevant_chunks),
+                'prompt_tokens': llm_result['prompt_tokens'],
+                'completion_tokens': llm_result['completion_tokens'],
+                'total_tokens': llm_result['total_tokens'],
+                'estimated_cost_usd': llm_result['cost_usd'],
+                'llm_latency_ms': llm_result['latency_ms'],
+                'prompt_template_key': llm_result['prompt_template_key'],
+                'prompt_template_version': llm_result['prompt_template_version']
             }
             
             logger.info(f"Question answered in {processing_time:.2f}s")

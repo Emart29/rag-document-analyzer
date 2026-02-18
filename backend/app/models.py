@@ -105,6 +105,18 @@ class SourceReference(BaseModel):
         }
 
 
+
+class LLMObservabilityData(BaseModel):
+    """Observability metrics returned with each answer."""
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    estimated_cost_usd: float
+    llm_latency_ms: float
+    prompt_template_key: Optional[str] = None
+    prompt_template_version: Optional[int] = None
+
+
 class QuestionResponse(BaseModel):
     """Response model for questions"""
     answer: str
@@ -112,7 +124,8 @@ class QuestionResponse(BaseModel):
     conversation_id: str
     processing_time: float
     model_used: str
-    
+    observability: Optional[LLMObservabilityData] = None
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -128,9 +141,58 @@ class QuestionResponse(BaseModel):
                 ],
                 "conversation_id": "conv_789",
                 "processing_time": 1.23,
-                "model_used": "llama-3.1-70b-versatile"
+                "model_used": "llama-3.1-70b-versatile",
+                "observability": {
+                    "prompt_tokens": 122,
+                    "completion_tokens": 96,
+                    "total_tokens": 218,
+                    "estimated_cost_usd": 0.00015,
+                    "llm_latency_ms": 540.12,
+                    "prompt_template_key": "rag_qa_system_prompt",
+                    "prompt_template_version": 1
+                }
             }
         }
+
+
+class PromptTemplateCreate(BaseModel):
+    """Create a new prompt template version."""
+    template_key: str = Field(..., min_length=2, max_length=100)
+    template_text: str = Field(..., min_length=10)
+    description: Optional[str] = None
+    activate: bool = True
+
+
+class PromptTemplateResponse(BaseModel):
+    id: int
+    template_key: str
+    version: int
+    template_text: str
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+
+
+class LLMLogEntry(BaseModel):
+    id: int
+    request_type: str
+    conversation_id: Optional[str] = None
+    model: str
+    question: Optional[str] = None
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    cost_usd: float
+    latency_ms: float
+    success: bool
+    error_message: Optional[str] = None
+    created_at: datetime
+
+
+class LLMObservabilitySummary(BaseModel):
+    window_hours: int
+    summary: Dict[str, Any]
+    trends: List[Dict[str, Any]]
 
 
 class DocumentInfo(BaseModel):

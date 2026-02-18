@@ -9,6 +9,7 @@ import os
 
 from ..models import HealthResponse, StatsResponse
 from ..services.rag_engine import get_rag_engine
+from ..services.observability_service import get_observability_service
 
 router = APIRouter(prefix="/system", tags=["System"])
 logger = logging.getLogger(__name__)
@@ -19,11 +20,11 @@ async def health_check():
     """
     Check system health and component status.
     """
-    
+
     try:
         rag_engine = get_rag_engine()
         health = rag_engine.health_check()
-        
+
         response = HealthResponse(
             status=health['status'],
             version=os.getenv("APP_VERSION", "1.0.0"),
@@ -31,9 +32,9 @@ async def health_check():
             chromadb_status=health['components'].get('chromadb', 'unknown'),
             embedding_model_loaded=health['components'].get('embeddings') == 'healthy'
         )
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         return HealthResponse(
@@ -47,32 +48,27 @@ async def health_check():
 
 @router.get("/stats", response_model=StatsResponse)
 async def get_stats():
-    """
-    Get system statistics.
-    """
-    
+    """Get system statistics."""
+
     try:
         rag_engine = get_rag_engine()
         stats = rag_engine.get_stats()
-        
-        # Calculate average response time (mock for now)
-        # In production, you'd track this in a database
-        avg_response_time = 1.5
-        
-        # Calculate uptime (mock)
-        uptime_seconds = 3600.0
-        
+        observability = get_observability_service().get_metrics_summary(window_hours=24)
+
+        avg_response_time = observability["summary"].get("average_latency_ms", 0.0) / 1000.0
+        uptime_seconds = float(os.getenv("APP_UPTIME_SECONDS", "3600"))
+
         response = StatsResponse(
             total_documents=stats.get('total_documents', 0),
             total_chunks=stats.get('total_chunks', 0),
             total_conversations=stats.get('total_conversations', 0),
-            total_questions_answered=0,  # Would track this in production
+            total_questions_answered=observability["summary"].get("total_queries", 0),
             average_response_time=avg_response_time,
             uptime_seconds=uptime_seconds
         )
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Error getting stats: {str(e)}")
         raise HTTPException(
@@ -86,11 +82,11 @@ async def get_system_info():
     """
     Get detailed system information.
     """
-    
+
     try:
         rag_engine = get_rag_engine()
         stats = rag_engine.get_stats()
-        
+
         return {
             "app_name": os.getenv("APP_NAME", "RAG Document Analyzer"),
             "version": os.getenv("APP_VERSION", "1.0.0"),
@@ -101,7 +97,7 @@ async def get_system_info():
             "max_file_size_mb": int(os.getenv("MAX_FILE_SIZE_MB", "10")),
             "allowed_file_types": os.getenv("ALLOWED_FILE_TYPES", ".pdf").split(",")
         }
-        
+
     except Exception as e:
         logger.error(f"Error getting system info: {str(e)}")
         raise HTTPException(

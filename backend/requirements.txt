@@ -36,3 +36,5 @@ pydantic-settings
 
 # For production
 gunicorn
+# Observability persistence
+sqlalchemy

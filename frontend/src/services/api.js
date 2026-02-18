@@ -82,4 +82,13 @@ export const queryAPI = {
     }),
 };
 
+
+
+export const observabilityAPI = {
+    getMetrics: (windowHours = 24) => api.get(`/observability/metrics?window_hours=${windowHours}`),
+    getLogs: (limit = 50) => api.get(`/observability/logs?limit=${limit}`),
+    getPrompts: (templateKey) => api.get('/observability/prompts', { params: templateKey ? { template_key: templateKey } : {} }),
+    createPromptVersion: (payload) => api.post('/observability/prompts', payload),
+};
+
 export default api;
